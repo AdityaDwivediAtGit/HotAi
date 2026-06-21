@@ -1,0 +1,7 @@
+agents:
+  VisionCoder:
+    description: "Responsible for OpenCV video processing and motion extraction."
+    role: "Video Processing Specialist"
+  AnalyticsCoder:
+    description: "Responsible for data clustering, anomaly detection logic, and DBSCAN."
+    role: "Data Clustering Specialist"
