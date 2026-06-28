@@ -1,30 +1,48 @@
-# HotAI MVP Walkthrough (Predictive Convergence)
+# Multi-Camera Testing & Map Visualization Plan
 
-## Summary of Accomplishments
+This document outlines the approach for testing the predictive convergence logic across 5 different video feeds and building a user-friendly Web UI to visualize the results on a map.
 
-I have successfully enhanced the HotAI pipeline to not only look at current density but also proactively identify *future convergence points*. By projecting where tracked objects will be 30-45 minutes into the future based on their current speeds and trajectories, authorities can be alerted well in advance of a major gathering.
+## Goal Description
+To extensively test the predictive hotspot detection, we will simulate a multi-camera environment. We will process 5 different video streams, assign each a unique GPS coordinate (e.g., surrounding a central square in Times Square), convert their pixel-based motion vectors into geographic (Latitude/Longitude) vectors, cluster them on a global coordinate plane, and visualize the cameras and the predicted hotspot on a Web Map UI.
 
-### Trajectory Projection & Clustering
-1. **Mathematical Projection**: The DBSCAN clustering algorithm in `src/clustering.py` now accepts a `projection_frames` parameter. It mathematically multiplies each tracked person's movement vector to calculate their GPS position 30 minutes in the future (defaulting to 54,000 frames ahead). 
-2. **Multi-Camera Mocking**: The `src/pipeline.py` script now tags each motion vector with a `source_id`. When DBSCAN clusters the projected locations, it identifies if people from *multiple* different cameras/sources are heading to the exact same future spot, which is a stronger indicator of an organized gathering.
-3. **Automated Testing**: We implemented `src/test_clustering.py` which mocks people moving from three different sources (Video 1, Point B, Point D) and mathematically proves that the system accurately calculates their single convergence hotspot 100 frames into the future.
+## Proposed Changes
 
-## Output Artifacts
+### 1. Data Preparation (Video Feeds)
+- I will download 4 additional sample CCTV/pedestrian videos (or use different temporal cuts of a sample video to ensure varying motion data) to total 5 video sources.
+- Assign 5 nearby GPS coordinates (forming a perimeter around a central point).
 
-Because a 30-45 minute prediction means the convergence point is almost certainly far outside the frame of the current CCTV camera, the visual output now features a persistent "CONVERGENCE ALERT" log overlay on the screen rather than a drawn circle. 
+### 2. [MODIFY] `src/optical_flow.py` & `src/pipeline.py` (Geographic Mapping)
+- Currently, projection happens in *pixel space*. To aggregate multiple cameras, we must translate pixels to geographic space.
+- Introduce a `pixel_to_meters` scale factor.
+- Convert the starting pixel `(x, y)` and the delta `(dx, dy)` into `(latitude, longitude)` and `(d_lat, d_lon)`.
+- Pass these absolute geographic coordinates into the clustering algorithm.
 
-### Visual Alerts (Color Gradients)
-The system alerts now use a calculated probability score depending on the density of the projected crowd. We apply a color gradient:
-- **Yellow (Low Probability)**: Small amounts of people starting to move in the same direction.
-- **Orange (Medium Probability)**: A growing cluster is heading toward the same destination.
-- **Red (High Probability)**: A very dense crowd is guaranteed to arrive at the projected GPS coordinates.
+### 3. [MODIFY] `src/clustering.py`
+- Update the clustering logic to use Haversine distance or scale the `eps` parameter to handle Latitude/Longitude coordinate scales rather than pixel scales (e.g., setting `eps` to approx 0.0005 degrees, roughly 50 meters).
 
-![Hotspot Output Video](file:///C:/Users/dwive/.gemini/antigravity/brain/045ebdb8-4ea8-42ff-b4ad-1586e409db56/hotspot_output.mp4)
+### 4. [NEW] `src/multi_pipeline.py`
+- An orchestrator script that iterates over all 5 videos, extracts geographic motion vectors from all of them, combines the vectors into a single massive array, and runs the `HotspotDetector` once on the aggregated dataset.
+- Saves the final output to `aggregated_hotspots.json`.
 
-### Hotspot Log Output
-The JSON payload has been updated to include the calculated mathematical probability, the list of unique cameras the data came from, and the specific GPS coordinate the crowd is expected to land on in 30 minutes:
+### 5. [NEW] `ui/index.html` & `ui/map.js`
+- Create a simple, clean, and modern Web UI using HTML, Vanilla CSS, and Leaflet.js (a popular open-source mapping library).
+- The map will plot:
+  - 🎥 The 5 Camera Locations (with markers).
+  - 🔴 The predicted Convergence Hotspots (drawn as glowing circles with gradient colors based on probability).
+  - ↗️ (Optional) Lines indicating the trajectory from the cameras to the hotspot.
 
-[Hotspots JSON Log](file:///C:/Users/dwive/.gemini/antigravity/brain/045ebdb8-4ea8-42ff-b4ad-1586e409db56/hotspots_log.json)
+## Open Questions
 
 > [!IMPORTANT]
-> This predictive logic enables proactive law enforcement. The JSON log can be hooked into a dispatch system to immediately notify local authorities of coordinates that *will* become crowded.
+> 1. **Video Sources**: I plan to use various open-source pedestrian tracking clips. If some clips don't have people moving towards the center, the convergence might not trigger. Is it acceptable if I artificially flip/rotate the video frames so that the simulated people are mathematically walking toward a central point to guarantee a hotspot test case?
+> 2. **UI Framework**: I am proposing a static HTML webpage using Leaflet.js for the map. This is highly portable and doesn't require a backend server. Does this simple approach work for you?
+
+## Verification Plan
+### Automated Tests
+- N/A for UI.
+
+### Manual Verification
+- Run `multi_pipeline.py` to generate the aggregated JSON.
+- Open `ui/index.html` in a web browser.
+- Verify that 5 camera markers are visible on the map.
+- Verify that a predicted hotspot (e.g., Red/Orange circle) is rendered at the expected convergence zone.
