@@ -42,3 +42,9 @@ Finally, the app takes the original video and draws on it.
 3. It writes a log in a text file (`.json`) saying: *"At this time, at this GPS location, we saw a crowd of this size."*
 
 And that's it! The application constantly repeats this process, turning a normal video into a smart, anomaly-detecting surveillance tool.
+
+## Outputs
+After a run, the application saves artifacts into the repository `artifacts/` folder by default. The two main outputs are:
+
+- `artifacts/hotspot_output.mp4` — processed video with visual overlays.
+- `artifacts/hotspots_log.json` — JSON log of hotspot detections including timestamps and mock GPS.

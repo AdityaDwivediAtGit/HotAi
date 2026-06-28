@@ -199,6 +199,13 @@ import numpy as np       # NumPy for arrays
 python -m unittest tests.test_hotai
 ```
 
+## Artifacts
+
+When the pipeline runs during tests or manually, outputs are written into the repository `artifacts/` directory (project root). Check these files for visual verification and logs:
+
+- `artifacts/hotspot_output.mp4`
+- `artifacts/hotspots_log.json`
+
 ### Automated Testing (Recommended)
 
 Use file watchers or CI/CD pipelines to run tests automatically:

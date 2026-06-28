@@ -7,13 +7,13 @@ Currently, the system flags hotspots based purely on the current spatial density
 
 ## Proposed Changes
 
-### [MODIFY] [clustering.py](file:///c:/Users/dwive/OneDrive/Documents/Git%20Cloned/HotAi/src/clustering.py)
+### [MODIFY] `src/clustering.py`
 - Introduce a `projection_factor` (e.g., predicting `N` frames into the future).
 - For each motion vector, calculate a projected destination: `projected_x = x + (dx * projection_factor)`.
 - Apply DBSCAN clustering on these *projected coordinates* rather than the current coordinates.
 - Return these projected hotspots, differentiating them as "Convergence Zones".
 
-### [MODIFY] [pipeline.py](file:///c:/Users/dwive/OneDrive/Documents/Git%20Cloned/HotAi/src/pipeline.py)
+### [MODIFY] `src/pipeline.py`
 - Update the visualization logic to draw the predicted convergence zones (perhaps in a different color, like orange or yellow, to distinguish them from current density hotspots).
 - Draw lines indicating the projected paths of moving objects towards these convergence zones.
 - Update the JSON log schema to include the `predicted_convergence_x` and `predicted_convergence_y`.
@@ -33,3 +33,6 @@ Currently, the system flags hotspots based purely on the current spatial density
 - Re-run `src/pipeline.py` on the sample video.
 - Observe the output video artifact: It should now display yellow convergence zones where paths intersect, projecting where the crowd will be.
 - Verify the JSON log contains the new predicted coordinates.
+
+### Artifacts
+The pipeline writes its visual output and logs into the repository `artifacts/` directory. Check `artifacts/hotspot_output.mp4` and `artifacts/hotspots_log.json` after a run.

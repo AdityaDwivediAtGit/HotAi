@@ -23,12 +23,15 @@ We ran the pipeline against a sample people-walking CCTV video, stopping after t
 ### Visual Output
 You can review the output heatmap overlaid on the mock CCTV footage below. Rapid/dense motions are highlighted with an active red heatmap circle, complete with a density score tracking metric.
 
-![Hotspot Output Video](file:///C:/Users/dwive/.gemini/antigravity/brain/045ebdb8-4ea8-42ff-b4ad-1586e409db56/hotspot_output.mp4)
+### Hotspot Output Video
+The pipeline writes a processed video to the project `artifacts/` folder. Open the following file in a media player to review the visual overlays:
+
+`artifacts/hotspot_output.mp4`
 
 ### Hotspot Log Output
-Here is the raw output from the analytics cluster detailing the density and timestamp, matched back to our mock GPS coordinates:
+The JSON analytics log is also saved to the project `artifacts/` folder. Example path:
 
-[Hotspots JSON Log](file:///C:/Users/dwive/.gemini/antigravity/brain/045ebdb8-4ea8-42ff-b4ad-1586e409db56/hotspots_log.json)
+`artifacts/hotspots_log.json`
 
 > [!TIP]
 > The MVP pipeline operates significantly fast since we track feature points instead of processing dense optical flow pixel-by-pixel. Future iterations could integrate background subtraction or deep-learning-based object tracking.

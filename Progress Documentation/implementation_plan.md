@@ -36,6 +36,19 @@ These scripts will form the core MVP. I will coordinate with `VisionCoder` and `
 ### Automated Tests
 - N/A for MVP script structure. I will ensure all Python scripts execute successfully.
 
+### Artifacts & Test Outputs
+All verification runs and the final pipeline will write outputs into the project `artifacts/` directory. During verification we will check:
+
+- `artifacts/hotspot_output.mp4` for correct visualization overlays
+- `artifacts/hotspots_log.json` for timestamped hotspot entries and mock GPS
+
+### Automated Tests
+- Add unit tests under `tests/` and run with:
+
+```bash
+python -m unittest tests.test_hotai
+```
+
 ### Manual Verification
 - We will run `pipeline.py` on a sample video.
 - **Visual Output:** A generated video artifact with a heatmap overlay indicating high-density clusters.

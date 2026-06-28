@@ -35,6 +35,22 @@ python src/pipeline.py
 ```
 
 ### Outputs
-After running the script, the artifacts will be saved to your configured output path (by default, in the generated workspace artifacts directory):
-- **`hotspot_output.mp4`**: A video overlay containing red circles acting as heatmaps on areas with high motion density.
-- **`hotspots_log.json`**: A JSON document logging the mock GPS coordinates, timestamps, cluster centers, and density scores for each detected hotspot.
+After running the script, the artifacts will be saved to your configured output path (by default, in the generated workspace `artifacts/` directory):
+
+- **`artifacts/hotspot_output.mp4`**: A video overlay containing red circles acting as heatmaps on areas with high motion density.
+- **`artifacts/hotspots_log.json`**: A JSON document logging the mock GPS coordinates, timestamps, cluster centers, and density scores for each detected hotspot.
+
+You can open the output video with your preferred media player or inspect the JSON with any editor.
+
+### Running Tests
+Run the automated test suite from the project root:
+
+```bash
+python -m unittest tests.test_hotai
+```
+
+For verbose output:
+
+```bash
+python -m unittest tests.test_hotai -v
+```
