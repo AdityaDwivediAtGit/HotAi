@@ -93,11 +93,13 @@ if __name__ == "__main__":
             
     mock_gps = {"lat": 40.7580, "lon": -73.9855} # Mock coordinates nearby Times Square
     
-    # Save artifacts into the brain directory
-    artifact_dir = r"C:\Users\dwive\.gemini\antigravity\brain\045ebdb8-4ea8-42ff-b4ad-1586e409db56"
+    # Save artifacts into a local project folder for easy discovery.
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    artifact_dir = os.path.join(project_root, "artifacts")
+    os.makedirs(artifact_dir, exist_ok=True)
     output_video = os.path.join(artifact_dir, "hotspot_output.mp4")
     output_log = os.path.join(artifact_dir, "hotspots_log.json")
     
     print(f"Running pipeline on {video_file}...")
     run_pipeline(video_file, mock_gps, output_video, output_log)
-    print("Pipeline completed. Check the artifacts directory for outputs.")
+    print(f"Pipeline completed. Outputs written to: {artifact_dir}")
