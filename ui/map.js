@@ -2,18 +2,14 @@ let map;
 let cameras = [];
 let hotspotsLayer;
 let trajectoriesLayer;
-let rawVectors = [];
+let analyticsDB = [];
 
-const MAP_CENTER = [40.7580, -73.9855]; // Times Square
+const MAP_CENTER = [40.7580, -73.9855]; 
 
 function initMap() {
-    map = L.map('map', {
-        zoomControl: false 
-    }).setView(MAP_CENTER, 15);
-    
-    // Dark mode CARTO tiles
+    map = L.map('map', { zoomControl: false }).setView(MAP_CENTER, 15);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+        attribution: '&copy; CARTO'
     }).addTo(map);
 
     hotspotsLayer = L.layerGroup().addTo(map);
@@ -24,206 +20,66 @@ function initMap() {
 
 async function fetchData() {
     try {
-        const response = await fetch('raw_vectors.json');
-        rawVectors = await response.json();
-        
-        // If empty or failed, generate mock vectors
-        if (!rawVectors || rawVectors.length === 0) {
-            generateMockVectors();
-        }
+        const response = await fetch('camera_analytics.json');
+        analyticsDB = await response.json();
         setupCameras();
     } catch (e) {
-        console.warn("Could not load vectors, generating mock vectors", e);
-        generateMockVectors();
-        setupCameras();
-    }
-}
-
-function generateMockVectors() {
-    rawVectors = [];
-    for(let i=0; i<30; i++) {
-        rawVectors.push({dx: Math.random()*2+1, dy: Math.random()*2+1});
+        console.warn("Could not load camera_analytics.json. Run orchestrator.py first.", e);
+        alert("Run python src/orchestrator.py to generate 20 videos and analytics!");
     }
 }
 
 function setupCameras() {
-    const radius = 0.005; // Roughly 500 meters
-    const numCameras = 20;
-    
-    for (let i = 0; i < numCameras; i++) {
-        const angle = (i / numCameras) * Math.PI * 2;
-        const r = radius + (Math.random() * 0.002 - 0.001);
+    analyticsDB.forEach((camData, i) => {
+        // Use coordinates from JSON initially, but allow dragging
+        const marker = L.marker([camData.lat, camData.lng], { draggable: true }).addTo(map);
         
-        const lat = MAP_CENTER[0] + r * Math.sin(angle);
-        const lng = MAP_CENTER[1] + r * Math.cos(angle);
-        
-        const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
         marker.on('dragend', calculateConvergence);
-        marker.on('mouseover', (e) => handleMarkerHover(i, true, e));
-        marker.on('mouseout', (e) => handleMarkerHover(i, false, e));
-        // Click pins/unpins the camera preview instead of opening a file dialog
-        marker.on('click', () => togglePinMarker(i));
-
+        marker.on('click', () => openPanel(i));
+        
         cameras.push({
-            id: 'Cam_' + i,
+            id: camData.id,
             marker: marker,
-            video: '../sample.mp4', // default footage (relative path)
-            pinned: false
+            data: camData
         });
-    }
-    
+    });
     calculateConvergence();
 }
 
-// Hover preview handling
-const previewEl = document.getElementById('hover-preview');
-const previewVideo = document.getElementById('hover-video');
-const previewTitle = document.getElementById('preview-title');
-const previewStats = document.getElementById('preview-stats');
-const pinBtn = document.getElementById('pin-btn');
-const assignBtn = document.getElementById('assign-btn');
-const fileInput = document.getElementById('file-input');
-
-function handleMarkerHover(index, entering, event) {
-    const cam = cameras[index];
-    if (!cam) return;
-
-    if (entering) {
-        // Populate preview
-        previewTitle.innerText = cam.id;
-        const info = computeCameraStats(cam);
-        previewStats.innerText = `Vectors: ${info.count} • Avg speed: ${info.avg.toFixed(2)}`;
-        // Set video source
-        try {
-            previewVideo.pause();
-            previewVideo.src = cam.video || '../sample.mp4';
-            previewVideo.currentTime = 0;
-            previewVideo.play().catch(()=>{});
-        } catch (e) {}
-
-        // Position preview near marker and show it unless another camera is pinned
-        if (!isAnyPinned() || cam.pinned) {
-            positionPreviewNearMarker(cam, event);
-            showPreview();
-        }
-    } else {
-        // Hide preview unless this camera is pinned
-        if (!cam.pinned) {
-            // find any other pinned camera
-            if (!isAnyPinned()) hidePreview();
-        }
-    }
+function openPanel(index) {
+    const cam = cameras[index].data;
+    document.getElementById('cam-title').innerText = cam.id + " Analytics";
+    
+    // Load video
+    const videoElem = document.getElementById('cam-video');
+    videoElem.src = cam.video_path;
+    videoElem.load();
+    videoElem.play();
+    
+    // Load metrics
+    document.getElementById('cam-direction').innerText = cam.metrics.dominant_direction;
+    document.getElementById('cam-confidence').innerText = cam.metrics.confidence_score + "%";
+    document.getElementById('cam-count').innerText = cam.metrics.total_movement_vectors;
+    
+    // Load distribution bars
+    const dist = cam.metrics.directional_distribution;
+    const total = Math.max(1, Object.values(dist).reduce((a,b)=>a+b, 0));
+    
+    ['North', 'South', 'East', 'West'].forEach(dir => {
+        const val = dist[dir] || 0;
+        const pct = (val / total) * 100;
+        document.getElementById(`bar-${dir}`).style.width = pct + "%";
+        document.getElementById(`val-${dir}`).innerText = val;
+    });
+    
+    document.getElementById('video-panel').classList.remove('hidden');
 }
 
-function positionPreviewNearMarker(cam, event) {
-    // Determine a container point for the marker (use event.latlng if available)
-    let latlng = cam.marker.getLatLng();
-    if (event && event.latlng) latlng = event.latlng;
-
-    const containerPoint = map.latLngToContainerPoint(latlng);
-    const rect = map.getContainer().getBoundingClientRect();
-    const absX = Math.round(rect.left + containerPoint.x);
-    const absY = Math.round(rect.top + containerPoint.y);
-
-    // Place preview to the right of the marker by default
-    const offsetX = 20;
-    const offsetY = -40;
-
-    // Apply to preview element
-    previewEl.style.left = (absX + offsetX) + 'px';
-    // Try to vertically center preview around marker
-    const approxTop = absY + offsetY - (previewEl.offsetHeight / 2 || 0);
-    // Clamp to viewport
-    const maxTop = window.innerHeight - previewEl.offsetHeight - 10;
-    const topVal = Math.max(10, Math.min(maxTop, approxTop));
-    previewEl.style.top = topVal + 'px';
+function closePanel() {
+    document.getElementById('video-panel').classList.add('hidden');
+    document.getElementById('cam-video').pause();
 }
 
-function showPreview() { previewEl.classList.remove('hidden'); }
-function hidePreview() { previewEl.classList.add('hidden'); previewVideo.pause(); }
-
-function isAnyPinned() { return cameras.some(c=>c.pinned); }
-
-pinBtn.addEventListener('click', () => {
-    // Toggle pin on the currently visible camera (by title)
-    const id = previewTitle.innerText;
-    const cam = cameras.find(c=>c.id === id);
-    if (!cam) return;
-    cam.pinned = !cam.pinned;
-    pinBtn.classList.toggle('active', cam.pinned);
-    pinBtn.innerText = cam.pinned ? 'Unpin' : 'Pin';
-});
-
-assignBtn.addEventListener('click', () => {
-    fileInput.value = null;
-    fileInput.click();
-});
-
-fileInput.addEventListener('change', (ev) => {
-    const files = ev.target.files;
-    if (!files || files.length === 0) return;
-    const file = files[0];
-    const url = URL.createObjectURL(file);
-    // assign to current preview camera
-    const id = previewTitle.innerText;
-    const cam = cameras.find(c=>c.id === id);
-    if (!cam) return;
-    cam.video = url;
-    // immediately play
-    previewVideo.pause();
-    previewVideo.src = url;
-    previewVideo.play().catch(()=>{});
-});
-
-function openAssignDialog(index) {
-    const cam = cameras[index];
-    if (!cam) return;
-    // open file chooser to assign footage
-    previewTitle.innerText = cam.id;
-    previewStats.innerText = 'Click Assign Footage to choose a local video file.';
-    fileInput.value = null;
-    fileInput.click();
-}
-
-function togglePinMarker(index) {
-    const cam = cameras[index];
-    if (!cam) return;
-    cam.pinned = !cam.pinned;
-
-    // If pinning, show and populate preview for this camera
-    previewTitle.innerText = cam.id;
-    const info = computeCameraStats(cam);
-    previewStats.innerText = `Vectors: ${info.count} • Avg speed: ${info.avg.toFixed(2)}`;
-    try {
-        previewVideo.pause();
-        previewVideo.src = cam.video || '../sample.mp4';
-        previewVideo.currentTime = 0;
-        previewVideo.play().catch(()=>{});
-    } catch (e) {}
-
-    // Update preview visibility and pin button state
-    if (cam.pinned) {
-        showPreview();
-        pinBtn.classList.add('active');
-        pinBtn.innerText = 'Unpin';
-    } else {
-        pinBtn.classList.remove('active');
-        pinBtn.innerText = 'Pin';
-        // If no other camera pinned, hide preview
-        if (!isAnyPinned()) hidePreview();
-    }
-}
-
-function computeCameraStats(cam) {
-    // Compute simple stats from rawVectors: count and avg magnitude
-    const count = rawVectors.length;
-    let sum = 0;
-    for (let v of rawVectors) sum += Math.sqrt(v.dx*v.dx + v.dy*v.dy);
-    const avg = count ? (sum / count) : 0;
-    return { count, avg };
-}
-
-// Simple DBSCAN in JS for Geographic coordinates
 function dbscan(points, eps, minPts) {
     let labels = new Array(points.length).fill(0);
     let clusterId = 0;
@@ -236,7 +92,6 @@ function dbscan(points, eps, minPts) {
 
     for (let i = 0; i < points.length; i++) {
         if (labels[i] !== 0) continue;
-        
         let neighbors = [];
         for (let j = 0; j < points.length; j++) {
             if (getDistance(points[i], points[j]) <= eps) neighbors.push(j);
@@ -248,7 +103,6 @@ function dbscan(points, eps, minPts) {
             clusterId++;
             labels[i] = clusterId;
             let seedSet = [...neighbors];
-            
             for (let j = 0; j < seedSet.length; j++) {
                 let q = seedSet[j];
                 if (labels[q] === -1) labels[q] = clusterId;
@@ -259,7 +113,6 @@ function dbscan(points, eps, minPts) {
                 for (let k = 0; k < points.length; k++) {
                     if (getDistance(points[q], points[k]) <= eps) qNeighbors.push(k);
                 }
-                
                 if (qNeighbors.length >= minPts) {
                     for(let k=0; k<qNeighbors.length; k++) {
                         if(!seedSet.includes(qNeighbors[k])) seedSet.push(qNeighbors[k]);
@@ -285,43 +138,38 @@ function calculateConvergence() {
     trajectoriesLayer.clearLayers();
     
     let projectedPoints = [];
-    const scaleFactor = 0.0001; 
+    const scaleFactor = 0.0005; // Simulation multiplier 
     
     cameras.forEach(cam => {
         const latLng = cam.marker.getLatLng();
         const angleToCenter = Math.atan2(MAP_CENTER[0] - latLng.lat, MAP_CENTER[1] - latLng.lng);
         
-        rawVectors.forEach(v => {
-            const magnitude = Math.sqrt(v.dx*v.dx + v.dy*v.dy);
-            const noise = (Math.random() - 0.5) * 0.4; // 0.4 radians noise ~ 22 degrees
-            const finalAngle = angleToCenter + noise;
+        // We use the single mock dominant vector to generate 20 simulated trajectory points per camera
+        for(let i=0; i<20; i++) {
+            const noiseAngle = (Math.random() - 0.5) * 0.4;
+            const finalAngle = angleToCenter + noiseAngle;
             
-            const noisyMag = magnitude * (0.5 + Math.random());
+            // Speed noise
+            const speed = 5.0 * (0.5 + Math.random());
             
-            const projLat = latLng.lat + (Math.sin(finalAngle) * noisyMag * scaleFactor);
-            const projLng = latLng.lng + (Math.cos(finalAngle) * noisyMag * scaleFactor);
+            const projLat = latLng.lat + (Math.sin(finalAngle) * speed * scaleFactor);
+            const projLng = latLng.lng + (Math.cos(finalAngle) * speed * scaleFactor);
             
-            projectedPoints.push({
-                lat: projLat,
-                lng: projLng,
-                source: cam.id
-            });
+            projectedPoints.push({ lat: projLat, lng: projLng, source: cam.id });
             
-            // Render 10% of trajectories for performance/visual clarity
-            if(Math.random() > 0.9) {
+            if(Math.random() > 0.95) {
                 L.polyline([[latLng.lat, latLng.lng], [projLat, projLng]], {
-                    color: 'rgba(56, 189, 248, 0.2)',
-                    weight: 1
+                    color: 'rgba(56, 189, 248, 0.2)', weight: 1
                 }).addTo(trajectoriesLayer);
             }
-        });
+        }
     });
     
-    const clusters = dbscan(projectedPoints, 0.0015, 8);
+    const clusters = dbscan(projectedPoints, 0.002, 10);
     let hotspotCount = 0;
     
     clusters.forEach(cluster => {
-        if (cluster.length < 20) return; // Only show significant clusters
+        if (cluster.length < 25) return; 
         hotspotCount++;
         
         let sumLat = 0; let sumLng = 0;
@@ -329,17 +177,13 @@ function calculateConvergence() {
         const centerLat = sumLat / cluster.length;
         const centerLng = sumLng / cluster.length;
         
-        // Probability determines color
-        const prob = Math.min(1.0, cluster.length / 100.0);
+        const prob = Math.min(1.0, cluster.length / 150.0);
         const r = 255;
         const g = Math.floor(255 * (1 - prob));
         const color = `rgb(${r}, ${g}, 0)`;
         
         L.circle([centerLat, centerLng], {
-            color: color,
-            fillColor: color,
-            fillOpacity: 0.6,
-            radius: 60 + (prob * 100)
+            color: color, fillColor: color, fillOpacity: 0.6, radius: 60 + (prob * 100)
         }).addTo(hotspotsLayer);
     });
     

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HotAI - Predictive Convergence</title>
+    <title>HotAI - Enhanced Predictive Convergence</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
@@ -12,7 +12,7 @@
 </head>
 <body>
     <div id="app">
-        <!-- Sidebar -->
+        <!-- Main Sidebar -->
         <aside class="sidebar glass">
             <div class="header">
                 <h1>HotAI</h1>
@@ -22,7 +22,9 @@
             <div class="controls">
                 <p class="instruction">
                     Drag the <strong>20 camera markers</strong> on the map. 
-                    The system will project 45-minute pedestrian trajectories to detect future convergence zones.
+                    The system projects 45-minute trajectories to detect future convergence zones.
+                    <br><br>
+                    <strong>Click on any camera marker</strong> to view its live processed video and rich analytics.
                 </p>
                 <div class="stats-box">
                     <h3>Active Cameras</h3>
@@ -48,23 +50,44 @@
 
         <!-- Map Container -->
         <main id="map"></main>
-    </div>
 
-    <!-- Hover preview overlay -->
-    <div id="hover-preview" class="hover-preview hidden">
-        <video id="hover-video" width="320" height="180" muted playsinline></video>
-        <div class="preview-meta">
-            <div id="preview-title">Camera</div>
-            <div id="preview-stats">Vectors: 0 • Avg speed: 0.0</div>
-            <div class="preview-actions">
-                <button id="pin-btn">Pin</button>
-                <button id="assign-btn">Assign Footage</button>
+        <!-- Video & Analytics Detail Panel -->
+        <div id="video-panel" class="glass hidden">
+            <button class="close-btn" onclick="closePanel()">×</button>
+            <h2 id="cam-title">Camera Details</h2>
+            
+            <div class="video-container">
+                <video id="cam-video" controls autoplay loop muted>
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <p class="vid-overlay-text">🟢 Overall Movement Arrow Rendered</p>
+            </div>
+            
+            <div class="analytics-container">
+                <div class="metric">
+                    <span>Dominant Direction:</span>
+                    <strong id="cam-direction">N/A</strong>
+                </div>
+                <div class="metric">
+                    <span>Confidence Score:</span>
+                    <strong id="cam-confidence">0%</strong>
+                </div>
+                <div class="metric">
+                    <span>Total Detected Vectors:</span>
+                    <strong id="cam-count">0</strong>
+                </div>
+                
+                <h4 style="margin-top: 15px; margin-bottom: 10px; color: #94a3b8;">Directional Distribution</h4>
+                <div class="bar-chart">
+                    <div class="bar-row"><span class="label">North</span><div class="bar"><div class="fill" id="bar-North"></div></div><span class="val" id="val-North">0</span></div>
+                    <div class="bar-row"><span class="label">South</span><div class="bar"><div class="fill" id="bar-South"></div></div><span class="val" id="val-South">0</span></div>
+                    <div class="bar-row"><span class="label">East</span><div class="bar"><div class="fill" id="bar-East"></div></div><span class="val" id="val-East">0</span></div>
+                    <div class="bar-row"><span class="label">West</span><div class="bar"><div class="fill" id="bar-West"></div></div><span class="val" id="val-West">0</span></div>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Hidden file input for assigning footage -->
-    <input id="file-input" type="file" accept="video/*" style="display:none" />
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

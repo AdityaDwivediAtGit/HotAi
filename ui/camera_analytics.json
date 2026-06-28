@@ -1,0 +1,402 @@
+[
+  {
+    "id": "Cam_0",
+    "lat": 40.758,
+    "lng": -73.9805,
+    "video_path": "videos/cam_0.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 309,
+      "dominant_direction": "East",
+      "confidence_score": 38.19,
+      "directional_distribution": {
+        "North": 57,
+        "South": 62,
+        "East": 118,
+        "West": 72
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_1",
+    "lat": 40.759575985384224,
+    "lng": -73.9806496113487,
+    "video_path": "videos/cam_1.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 335,
+      "dominant_direction": "East",
+      "confidence_score": 41.49,
+      "directional_distribution": {
+        "North": 61,
+        "South": 69,
+        "East": 139,
+        "West": 66
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_2",
+    "lat": 40.76105648107925,
+    "lng": -73.98129311000712,
+    "video_path": "videos/cam_2.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 308,
+      "dominant_direction": "East",
+      "confidence_score": 29.87,
+      "directional_distribution": {
+        "North": 67,
+        "South": 80,
+        "East": 92,
+        "West": 69
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_3",
+    "lat": 40.7622877875902,
+    "lng": -73.98238473474944,
+    "video_path": "videos/cam_3.mp4",
+    "mock_dx": -5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 276,
+      "dominant_direction": "West",
+      "confidence_score": 28.26,
+      "directional_distribution": {
+        "North": 64,
+        "South": 68,
+        "East": 66,
+        "West": 78
+      },
+      "camera_orientation_estimate": "Facing West"
+    }
+  },
+  {
+    "id": "Cam_4",
+    "lat": 40.763135703416786,
+    "lng": -73.98383130277915,
+    "video_path": "videos/cam_4.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 471,
+      "dominant_direction": "East",
+      "confidence_score": 30.15,
+      "directional_distribution": {
+        "North": 115,
+        "South": 121,
+        "East": 142,
+        "West": 93
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_5",
+    "lat": 40.7635,
+    "lng": -73.98549999270263,
+    "video_path": "videos/cam_5.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 360,
+      "dominant_direction": "East",
+      "confidence_score": 28.89,
+      "directional_distribution": {
+        "North": 90,
+        "South": 83,
+        "East": 104,
+        "West": 83
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_6",
+    "lat": 40.76332591924646,
+    "lng": -73.98723048668882,
+    "video_path": "videos/cam_6.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 329,
+      "dominant_direction": "East",
+      "confidence_score": 31.0,
+      "directional_distribution": {
+        "North": 77,
+        "South": 77,
+        "East": 102,
+        "West": 73
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_7",
+    "lat": 40.7626114030913,
+    "lng": -73.98885036737234,
+    "video_path": "videos/cam_7.mp4",
+    "mock_dx": -5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 467,
+      "dominant_direction": "West",
+      "confidence_score": 28.05,
+      "directional_distribution": {
+        "North": 130,
+        "South": 126,
+        "East": 80,
+        "West": 131
+      },
+      "camera_orientation_estimate": "Facing West"
+    }
+  },
+  {
+    "id": "Cam_8",
+    "lat": 40.76140916442444,
+    "lng": -73.99019229133017,
+    "video_path": "videos/cam_8.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 367,
+      "dominant_direction": "East",
+      "confidence_score": 35.97,
+      "directional_distribution": {
+        "North": 87,
+        "South": 83,
+        "East": 132,
+        "West": 65
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_9",
+    "lat": 40.75982321366773,
+    "lng": -73.9911112290919,
+    "video_path": "videos/cam_9.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 342,
+      "dominant_direction": "East",
+      "confidence_score": 33.63,
+      "directional_distribution": {
+        "North": 87,
+        "South": 72,
+        "East": 115,
+        "West": 68
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_10",
+    "lat": 40.75800001592154,
+    "lng": -73.99149999999997,
+    "video_path": "videos/cam_10.mp4",
+    "mock_dx": 0,
+    "mock_dy": 5,
+    "metrics": {
+      "total_movement_vectors": 289,
+      "dominant_direction": "South",
+      "confidence_score": 27.34,
+      "directional_distribution": {
+        "North": 73,
+        "South": 79,
+        "East": 76,
+        "West": 61
+      },
+      "camera_orientation_estimate": "Facing South"
+    }
+  },
+  {
+    "id": "Cam_11",
+    "lat": 40.75611501326844,
+    "lng": -73.99130145025161,
+    "video_path": "videos/cam_11.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 344,
+      "dominant_direction": "East",
+      "confidence_score": 34.88,
+      "directional_distribution": {
+        "North": 85,
+        "South": 66,
+        "East": 120,
+        "West": 73
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_12",
+    "lat": 40.75435574740799,
+    "lng": -73.99051591696957,
+    "video_path": "videos/cam_12.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 550,
+      "dominant_direction": "East",
+      "confidence_score": 31.45,
+      "directional_distribution": {
+        "North": 152,
+        "South": 113,
+        "East": 173,
+        "West": 112
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_13",
+    "lat": 40.75290320570975,
+    "lng": -73.98920306467171,
+    "video_path": "videos/cam_13.mp4",
+    "mock_dx": 0,
+    "mock_dy": -5,
+    "metrics": {
+      "total_movement_vectors": 709,
+      "dominant_direction": "North",
+      "confidence_score": 31.59,
+      "directional_distribution": {
+        "North": 224,
+        "South": 203,
+        "East": 195,
+        "West": 87
+      },
+      "camera_orientation_estimate": "Facing North"
+    }
+  },
+  {
+    "id": "Cam_14",
+    "lat": 40.751913245642996,
+    "lng": -73.98747773137646,
+    "video_path": "videos/cam_14.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 577,
+      "dominant_direction": "East",
+      "confidence_score": 42.11,
+      "directional_distribution": {
+        "North": 143,
+        "South": 120,
+        "East": 243,
+        "West": 71
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_15",
+    "lat": 40.75150000000006,
+    "lng": -73.9855000258725,
+    "video_path": "videos/cam_15.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 322,
+      "dominant_direction": "East",
+      "confidence_score": 32.61,
+      "directional_distribution": {
+        "North": 74,
+        "South": 61,
+        "East": 105,
+        "West": 82
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_16",
+    "lat": 40.751723018333266,
+    "lng": -73.98346051448756,
+    "video_path": "videos/cam_16.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 218,
+      "dominant_direction": "East",
+      "confidence_score": 40.37,
+      "directional_distribution": {
+        "North": 44,
+        "South": 46,
+        "East": 88,
+        "West": 40
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_17",
+    "lat": 40.7525795683723,
+    "lng": -73.98156186326173,
+    "video_path": "videos/cam_17.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 323,
+      "dominant_direction": "East",
+      "confidence_score": 36.22,
+      "directional_distribution": {
+        "North": 79,
+        "South": 80,
+        "East": 117,
+        "West": 47
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  },
+  {
+    "id": "Cam_18",
+    "lat": 40.75400303400764,
+    "lng": -73.97999870352955,
+    "video_path": "videos/cam_18.mp4",
+    "mock_dx": -5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 311,
+      "dominant_direction": "West",
+      "confidence_score": 32.8,
+      "directional_distribution": {
+        "North": 71,
+        "South": 44,
+        "East": 94,
+        "West": 102
+      },
+      "camera_orientation_estimate": "Facing West"
+    }
+  },
+  {
+    "id": "Cam_19",
+    "lat": 40.75586774965296,
+    "lng": -73.97893772078791,
+    "video_path": "videos/cam_19.mp4",
+    "mock_dx": 5,
+    "mock_dy": 0,
+    "metrics": {
+      "total_movement_vectors": 343,
+      "dominant_direction": "East",
+      "confidence_score": 29.15,
+      "directional_distribution": {
+        "North": 77,
+        "South": 79,
+        "East": 100,
+        "West": 87
+      },
+      "camera_orientation_estimate": "Facing East"
+    }
+  }
+]
