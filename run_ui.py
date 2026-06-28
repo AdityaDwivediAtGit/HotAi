@@ -12,12 +12,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
 
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    allow_reuse_address = True
+
 def start_server():
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        addr, port = httpd.server_address
-        print(f"Serving at http://localhost:{port}")
-        webbrowser.open(f"http://localhost:{port}/index.html")
-        httpd.serve_forever()
+    try:
+        with ThreadedTCPServer(("", PORT), Handler) as httpd:
+            addr, port = httpd.server_address
+            print(f"Serving at http://localhost:{port}")
+            webbrowser.open(f"http://localhost:{port}/index.html")
+            httpd.serve_forever()
+    except OSError as e:
+        print(f"Failed to bind port {PORT}: {e}")
+        print("Make sure no other service is using port 8001, then restart run_ui.py.")
 
 if __name__ == "__main__":
     print("Starting local server for HotAI UI...")

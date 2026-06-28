@@ -5,6 +5,7 @@ let trajectoriesLayer;
 let analyticsDB = [];
 
 const MAP_CENTER = [40.7580, -73.9855];
+const BASE_ASSET_URL = new URL('.', window.location.href).href;
 
 function initMap() {
     map = L.map('map', { zoomControl: false }).setView(MAP_CENTER, 15);
@@ -19,8 +20,10 @@ function initMap() {
 }
 
 async function fetchData() {
+    const analyticsUrl = new URL('camera_analytics.json', BASE_ASSET_URL).href;
     try {
-        const response = await fetch('camera_analytics.json');
+        console.log('Fetching analytics from', analyticsUrl);
+        const response = await fetch(analyticsUrl);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -53,11 +56,25 @@ function openPanel(index) {
     const cam = cameras[index].data;
     document.getElementById('cam-title').innerText = cam.id + " Analytics";
     
-    // Load video using a relative URL from the UI folder
+    // Resolve video URL from the same asset folder as the script
     const videoElem = document.getElementById('cam-video');
-    videoElem.src = cam.video_path;
+    const sourceElem = videoElem.querySelector('source');
+    const videoUrl = new URL(cam.video_path, BASE_ASSET_URL).href;
+    console.log('Loading camera video:', videoUrl);
+
+    videoElem.onerror = (ev) => {
+        console.error('Video element error for', videoUrl, ev);
+    };
+    sourceElem.onerror = () => {
+        console.error('Video source failed to load:', videoUrl);
+    };
+
+    sourceElem.src = videoUrl;
+    videoElem.src = videoUrl;
     videoElem.load();
-    videoElem.play();
+    videoElem.play().catch(err => {
+        console.error('Video play failed:', err, videoUrl);
+    });
     
     // Load metrics
     document.getElementById('cam-direction').innerText = cam.metrics.dominant_direction;
