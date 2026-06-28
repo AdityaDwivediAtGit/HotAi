@@ -4,7 +4,7 @@ let hotspotsLayer;
 let trajectoriesLayer;
 let analyticsDB = [];
 
-const MAP_CENTER = [40.7580, -73.9855]; 
+const MAP_CENTER = [40.7580, -73.9855];
 
 function initMap() {
     map = L.map('map', { zoomControl: false }).setView(MAP_CENTER, 15);
@@ -21,11 +21,14 @@ function initMap() {
 async function fetchData() {
     try {
         const response = await fetch('camera_analytics.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         analyticsDB = await response.json();
         setupCameras();
     } catch (e) {
-        console.warn("Could not load camera_analytics.json. Run orchestrator.py first.", e);
-        alert("Run python src/orchestrator.py to generate 20 videos and analytics!");
+        console.warn('Unable to load camera_analytics.json:', e);
+        alert('Unable to load camera analytics. Please ensure camera_analytics.json is available in the UI folder and that the page is served from a web server.');
     }
 }
 
@@ -50,7 +53,7 @@ function openPanel(index) {
     const cam = cameras[index].data;
     document.getElementById('cam-title').innerText = cam.id + " Analytics";
     
-    // Load video
+    // Load video using a relative URL from the UI folder
     const videoElem = document.getElementById('cam-video');
     videoElem.src = cam.video_path;
     videoElem.load();
