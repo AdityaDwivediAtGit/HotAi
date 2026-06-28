@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotAI - Predictive Convergence</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar glass">
+            <div class="header">
+                <h1>HotAI</h1>
+                <p>Predictive Hotspot Detection</p>
+            </div>
+            
+            <div class="controls">
+                <p class="instruction">
+                    Drag the <strong>20 camera markers</strong> on the map. 
+                    The system will project 45-minute pedestrian trajectories to detect future convergence zones.
+                </p>
+                <div class="stats-box">
+                    <h3>Active Cameras</h3>
+                    <div class="stat-value" id="camera-count">20</div>
+                </div>
+                <div class="stats-box alert-box">
+                    <h3>Predicted Hotspots</h3>
+                    <div class="stat-value" id="hotspot-count">0</div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h4>Probability Gradient</h4>
+                <div class="gradient-bar"></div>
+                <div class="gradient-labels">
+                    <span>Low</span>
+                    <span>High</span>
+                </div>
+            </div>
+            
+            <button id="recalculate-btn" class="glow-on-hover" onclick="recalculate()">Force Recalculate</button>
+        </aside>
+
+        <!-- Map Container -->
+        <main id="map"></main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Custom JS -->
+    <script src="map.js"></script>
+</body>
+</html>
