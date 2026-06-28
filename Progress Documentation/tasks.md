@@ -1,0 +1,26 @@
+- [x] Project Setup
+  - [x] Create `.agents/AGENTS.md`
+  - [x] Create `agent.yaml`
+  - [x] Define VisionCoder subagent
+  - [x] Define AnalyticsCoder subagent
+- [/] Code Implementation
+  - [x] Download mock CCTV mp4 video (scripted in pipeline.py)
+  - [x] Create `requirements.txt`
+  - [x] Implement `src/ingestion.py`
+  - [x] Implement `src/optical_flow.py`
+  - [x] Implement `src/clustering.py`
+  - [x] Implement `src/pipeline.py`
+- [x] Execution and Testing
+  - [x] Run pipeline and verify artifacts
+- [x] Documentation
+  - [x] Create walkthrough.md
+- [x] Predictive Convergence Implementation
+  - [ ] Add `source_id` to motion vectors for multi-camera support
+  - [ ] Modify `clustering.py` to project trajectories 30-45 minutes into the future
+  - [ ] Add test suite (`test_clustering.py`)
+  - [ ] Update visualization with Yellow->Red gradient based on probability/density
+- [ ] Execution and Testing
+  - [ ] Run automated tests
+  - [ ] Run pipeline and verify new artifacts
+- [ ] Documentation
+  - [ ] Update walkthrough.md

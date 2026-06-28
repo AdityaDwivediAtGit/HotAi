@@ -26,6 +26,10 @@ def run_pipeline(video_path, mock_gps, output_video_path, output_log_path):
         # The extractor resizes to 640x360
         processed_frame, motion_vectors = extractor.extract_motion(frame)
         
+        # Add a mock source ID to simulate multi-camera feed
+        for mv in motion_vectors:
+            mv['source_id'] = 'Camera_1_Times_Square'
+        
         if out is None:
             h, w = processed_frame.shape[:2]
             out = cv2.VideoWriter(output_video_path, fourcc, 30.0, (w, h))
@@ -40,24 +44,29 @@ def run_pipeline(video_path, mock_gps, output_video_path, output_log_path):
             
         current_hotspot_logs = []
         for hs in hotspots:
-            cx, cy = int(hs['center_x']), int(hs['center_y'])
+            cx, cy = int(hs['projected_center_x']), int(hs['projected_center_y'])
             density = hs['density_score']
+            prob = hs['probability']
             
-            radius = min(80, density * 5)
-            overlay = processed_frame.copy()
-            cv2.circle(overlay, (cx, cy), radius, (0, 0, 255), -1)
-            cv2.addWeighted(overlay, 0.4, processed_frame, 0.6, 0, processed_frame)
+            # Gradient color from Yellow (0, 255, 255) to Red (0, 0, 255) based on probability
+            color_bgr = (0, int(255 * (1 - prob)), 255)
             
-            cv2.circle(processed_frame, (cx, cy), radius, (0, 0, 200), 2)
-            cv2.putText(processed_frame, f"Density: {density}", (cx - 20, cy - 10), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            # Because a 30-45 minute projected convergence point will be off-screen,
+            # we draw a prominent alert box on-screen instead of drawing off-canvas.
+            alert_text = f"CONVERGENCE ALERT! Prob: {prob:.2f} (Density: {density})"
+            
+            indicator_y = 30 + len(current_hotspot_logs) * 20
+            cv2.putText(processed_frame, alert_text, (10, indicator_y), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color_bgr, 2)
                         
             current_hotspot_logs.append({
                 'timestamp': frame_count / 30.0, 
                 'mock_gps': mock_gps,
-                'center_x': hs['center_x'],
-                'center_y': hs['center_y'],
-                'density_score': density
+                'projected_center_x': cx,
+                'projected_center_y': cy,
+                'density_score': density,
+                'probability': prob,
+                'unique_sources': hs['unique_sources']
             })
             
         if current_hotspot_logs:
