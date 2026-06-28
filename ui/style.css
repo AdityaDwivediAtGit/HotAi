@@ -150,3 +150,28 @@ body {
     border-color: rgba(56, 189, 248, 0.5);
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
 }
+
+/* Hover preview overlay */
+.hover-preview {
+    position: absolute;
+    width: 34%;
+    background: rgba(8, 12, 20, 0.95);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 2000;
+    transition: transform 0.08s ease;
+}
+
+.hover-preview.hidden { display: none; }
+
+.hover-preview video { border-radius: 6px; background: #000; }
+
+.preview-meta { color: var(--text-muted); font-size: 0.9rem; display:flex; flex-direction:column; gap:6px; }
+.preview-meta #preview-title { color: var(--text-main); font-weight:700; }
+.preview-actions { display:flex; gap:6px; }
+.preview-actions button { padding:6px 8px; border-radius:6px; border:none; cursor:pointer; background:rgba(255,255,255,0.06); color:var(--text-main); }
+.preview-actions button.active { box-shadow:0 0 10px rgba(56,189,248,0.2); background: rgba(56,189,248,0.12); }

@@ -1,50 +1,57 @@
 # How HotAI Works (In Simple Terms)
 
-Welcome to the HotAI project! If you're wondering what all the technical words mean and how this application actually does its job, you're in the right place. 
+Welcome to the HotAI project! This document explains the technical terminologies and the overall workflow of the application in simple language.
 
 ## 📖 Simple Dictionary (Terminologies)
 
-Here are the key terms used in the HotAI project, explained simply:
-
-- **CCTV (Closed-Circuit Television):** Standard security or traffic cameras. Our app processes videos recorded by these cameras.
-- **Optical Flow:** A computer vision technique that compares two consecutive frames (pictures) of a video to figure out which direction things are moving. Imagine holding up two photos taken a second apart and drawing arrows to show where a person stepped.
-- **Lucas-Kanade Method:** A specific, very fast type of "Optical Flow." Instead of looking at every single pixel (which is slow), it only looks at obvious features (like the corners of a person's shape) to track movement.
+- **CCTV:** Standard security or traffic cameras.
+- **Optical Flow (Lucas-Kanade):** A computer vision technique that compares two consecutive frames of a video to figure out which direction things are moving. 
 - **Motion Vectors:** The "arrows" created by the Optical Flow. A motion vector tells us two things: **Direction** (where the object is going) and **Magnitude** (how fast it is moving).
-- **DBSCAN (Density-Based Spatial Clustering of Applications with Noise):** A very smart grouping tool. It looks at all our motion vectors and says, "If a lot of these arrows are packed closely together, they form a group (a cluster). If an arrow is all by itself, ignore it (it's just noise)."
-- **Hotspot:** An area on the screen where DBSCAN found a dense group of moving objects. For example, a large crowd walking closely together.
-- **Heatmap:** A visual layer placed over the video. In our app, we draw red circles over the hotspots. The redder or larger the circle, the higher the density of the crowd.
+- **DBSCAN:** A smart grouping tool. If lots of arrows are packed closely together, it forms a group (a cluster). If an arrow is all by itself, it is ignored as "noise".
+- **Hotspot:** An area where DBSCAN found a dense group of moving objects. 
+- **Predictive Convergence:** Instead of just looking at where people are *now*, we use math to extend their motion arrows 30-45 minutes into the future to guess where they will end up.
+- **Heatmap:** A visual layer placed over the video or map. Redder/larger circles mean a higher probability of a large crowd forming.
 
 ---
 
-## ⚙️ How the Application Actually Works
+## ⚙️ The Two Main Workflows
 
-The HotAI application works in a step-by-step pipeline. Imagine a factory assembly line where a video enters on one side, and a smart, analyzed video comes out the other.
+To make testing easy, HotAI is split into two separate tools: **The Video Processor** and **The UI Simulator**.
 
-### Step 1: Taking in the Video (Ingestion)
-The application starts by opening a video file (like `.mp4`) to simulate a live CCTV camera feed. It also assigns a fake "GPS Coordinate" to this video so that if we detect an anomaly, we know where it happened in the real world.
+### 1. The Video Processor (Real Video Analysis)
+This tool is used when you have a real video file and want to analyze it.
 
-### Step 2: Spotting Movement (Optical Flow)
-The video is passed frame-by-frame (picture-by-picture) to the **VisionCoder** part of the app. 
-1. The app looks at the frame and picks out distinctive points (like the edges of people).
-2. It compares those points to the previous frame. 
-3. It draws invisible "Motion Vectors" (arrows) showing exactly how those points moved.
+```mermaid
+flowchart LR
+    A[sample.mp4] --> B[Ingestion Script]
+    B --> C[Optical Flow Extractor]
+    C --> D[DBSCAN Clustering]
+    D --> E[Video Output with Alert Text]
+    D --> F[JSON Log File]
+```
 
-### Step 3: Finding the Crowds (Clustering)
-Now, we have a list of arrows floating around the screen. The **AnalyticsCoder** part of the app takes over.
-1. It looks at the location of every single arrow.
-2. It uses **DBSCAN** to group them. If 5 or 10 arrows are moving very close to each other, it marks them as a "Hotspot".
-3. It ignores random, isolated movements (like a single bird flying by) so it doesn't trigger a false alarm.
+1. **Input:** You give the system a `.mp4` video and a GPS coordinate.
+2. **Processing:** It reads the video, finds moving people, and calculates where they are heading.
+3. **Output:** It generates a new `.mp4` video file with alerts drawn on the screen and saves a text file containing the exact coordinates of the hotspots.
 
-### Step 4: Showing the Results (Visualization)
-Finally, the app takes the original video and draws on it. 
-1. It draws green arrows to show the raw movement it detected.
-2. It draws glowing red circles (a heatmap) directly over the Hotspots it grouped together.
-3. It writes a log in a text file (`.json`) saying: *"At this time, at this GPS location, we saw a crowd of this size."*
+### 2. The Web UI Simulator (Multi-Camera Testing)
+Obtaining 20 videos of people walking perfectly toward the same spot is very hard. So, we built a Simulator to let you play with camera placements.
 
-And that's it! The application constantly repeats this process, turning a normal video into a smart, anomaly-detecting surveillance tool.
+```mermaid
+flowchart TD
+    A[Extract general walking patterns from 1 video] --> B[Save patterns to raw_vectors.json]
+    B --> C[Open Web UI in Browser]
+    C --> D[User drags Camera Markers on the Map]
+    D --> E[UI uses the patterns to simulate 20 distinct crowds]
+    E --> F[UI calculates future hotspots on the fly]
+    F --> G[Map draws glowing Red/Yellow circles]
+```
 
-## Outputs
-After a run, the application saves artifacts into the repository `artifacts/` folder by default. The two main outputs are:
+1. **The Setup:** We run a one-time script (`generate_db.py`) that watches one video, records a bunch of generic human walking patterns, and saves them to a file (`raw_vectors.json`).
+2. **The Dashboard:** When you open the Web UI, it reads those patterns. It doesn't process real videos; it uses the patterns to mathematically *pretend* there are 20 cameras.
+3. **The Simulation:** The UI is completely interactive. It doesn't write or save files. As you drag camera markers around the map, your web browser instantly recalculates the math and updates the predicted hotspots on the screen.
 
-- `artifacts/hotspot_output.mp4` — processed video with visual overlays.
-- `artifacts/hotspots_log.json` — JSON log of hotspot detections including timestamps and mock GPS.
+### Summary of Confusion Points Clarified
+* **Why doesn't `pipeline.py` update the UI?** They are separate tools. `pipeline.py` analyzes real video files. `generate_db.py` is what generates the mock data for the UI simulator.
+* **Why doesn't the UI save my camera positions?** The UI is a front-end simulator designed for instant visualization. It runs in your browser and does not talk to a backend server to overwrite files.
+* **Do we need 20 videos?** No! The UI uses the extracted generic walking patterns to artificially simulate 20 distinct crowds, allowing you to test the scaling capabilities without massive video storage requirements.

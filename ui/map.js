@@ -59,14 +59,168 @@ function setupCameras() {
         
         const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
         marker.on('dragend', calculateConvergence);
-        
+        marker.on('mouseover', (e) => handleMarkerHover(i, true, e));
+        marker.on('mouseout', (e) => handleMarkerHover(i, false, e));
+        // Click pins/unpins the camera preview instead of opening a file dialog
+        marker.on('click', () => togglePinMarker(i));
+
         cameras.push({
             id: 'Cam_' + i,
-            marker: marker
+            marker: marker,
+            video: '../sample.mp4', // default footage (relative path)
+            pinned: false
         });
     }
     
     calculateConvergence();
+}
+
+// Hover preview handling
+const previewEl = document.getElementById('hover-preview');
+const previewVideo = document.getElementById('hover-video');
+const previewTitle = document.getElementById('preview-title');
+const previewStats = document.getElementById('preview-stats');
+const pinBtn = document.getElementById('pin-btn');
+const assignBtn = document.getElementById('assign-btn');
+const fileInput = document.getElementById('file-input');
+
+function handleMarkerHover(index, entering, event) {
+    const cam = cameras[index];
+    if (!cam) return;
+
+    if (entering) {
+        // Populate preview
+        previewTitle.innerText = cam.id;
+        const info = computeCameraStats(cam);
+        previewStats.innerText = `Vectors: ${info.count} • Avg speed: ${info.avg.toFixed(2)}`;
+        // Set video source
+        try {
+            previewVideo.pause();
+            previewVideo.src = cam.video || '../sample.mp4';
+            previewVideo.currentTime = 0;
+            previewVideo.play().catch(()=>{});
+        } catch (e) {}
+
+        // Position preview near marker and show it unless another camera is pinned
+        if (!isAnyPinned() || cam.pinned) {
+            positionPreviewNearMarker(cam, event);
+            showPreview();
+        }
+    } else {
+        // Hide preview unless this camera is pinned
+        if (!cam.pinned) {
+            // find any other pinned camera
+            if (!isAnyPinned()) hidePreview();
+        }
+    }
+}
+
+function positionPreviewNearMarker(cam, event) {
+    // Determine a container point for the marker (use event.latlng if available)
+    let latlng = cam.marker.getLatLng();
+    if (event && event.latlng) latlng = event.latlng;
+
+    const containerPoint = map.latLngToContainerPoint(latlng);
+    const rect = map.getContainer().getBoundingClientRect();
+    const absX = Math.round(rect.left + containerPoint.x);
+    const absY = Math.round(rect.top + containerPoint.y);
+
+    // Place preview to the right of the marker by default
+    const offsetX = 20;
+    const offsetY = -40;
+
+    // Apply to preview element
+    previewEl.style.left = (absX + offsetX) + 'px';
+    // Try to vertically center preview around marker
+    const approxTop = absY + offsetY - (previewEl.offsetHeight / 2 || 0);
+    // Clamp to viewport
+    const maxTop = window.innerHeight - previewEl.offsetHeight - 10;
+    const topVal = Math.max(10, Math.min(maxTop, approxTop));
+    previewEl.style.top = topVal + 'px';
+}
+
+function showPreview() { previewEl.classList.remove('hidden'); }
+function hidePreview() { previewEl.classList.add('hidden'); previewVideo.pause(); }
+
+function isAnyPinned() { return cameras.some(c=>c.pinned); }
+
+pinBtn.addEventListener('click', () => {
+    // Toggle pin on the currently visible camera (by title)
+    const id = previewTitle.innerText;
+    const cam = cameras.find(c=>c.id === id);
+    if (!cam) return;
+    cam.pinned = !cam.pinned;
+    pinBtn.classList.toggle('active', cam.pinned);
+    pinBtn.innerText = cam.pinned ? 'Unpin' : 'Pin';
+});
+
+assignBtn.addEventListener('click', () => {
+    fileInput.value = null;
+    fileInput.click();
+});
+
+fileInput.addEventListener('change', (ev) => {
+    const files = ev.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const url = URL.createObjectURL(file);
+    // assign to current preview camera
+    const id = previewTitle.innerText;
+    const cam = cameras.find(c=>c.id === id);
+    if (!cam) return;
+    cam.video = url;
+    // immediately play
+    previewVideo.pause();
+    previewVideo.src = url;
+    previewVideo.play().catch(()=>{});
+});
+
+function openAssignDialog(index) {
+    const cam = cameras[index];
+    if (!cam) return;
+    // open file chooser to assign footage
+    previewTitle.innerText = cam.id;
+    previewStats.innerText = 'Click Assign Footage to choose a local video file.';
+    fileInput.value = null;
+    fileInput.click();
+}
+
+function togglePinMarker(index) {
+    const cam = cameras[index];
+    if (!cam) return;
+    cam.pinned = !cam.pinned;
+
+    // If pinning, show and populate preview for this camera
+    previewTitle.innerText = cam.id;
+    const info = computeCameraStats(cam);
+    previewStats.innerText = `Vectors: ${info.count} • Avg speed: ${info.avg.toFixed(2)}`;
+    try {
+        previewVideo.pause();
+        previewVideo.src = cam.video || '../sample.mp4';
+        previewVideo.currentTime = 0;
+        previewVideo.play().catch(()=>{});
+    } catch (e) {}
+
+    // Update preview visibility and pin button state
+    if (cam.pinned) {
+        showPreview();
+        pinBtn.classList.add('active');
+        pinBtn.innerText = 'Unpin';
+    } else {
+        pinBtn.classList.remove('active');
+        pinBtn.innerText = 'Pin';
+        // If no other camera pinned, hide preview
+        if (!isAnyPinned()) hidePreview();
+    }
+}
+
+function computeCameraStats(cam) {
+    // Compute simple stats from rawVectors: count and avg magnitude
+    const count = rawVectors.length;
+    let sum = 0;
+    for (let v of rawVectors) sum += Math.sqrt(v.dx*v.dx + v.dy*v.dy);
+    const avg = count ? (sum / count) : 0;
+    return { count, avg };
 }
 
 // Simple DBSCAN in JS for Geographic coordinates

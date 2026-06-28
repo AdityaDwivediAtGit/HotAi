@@ -50,6 +50,22 @@
         <main id="map"></main>
     </div>
 
+    <!-- Hover preview overlay -->
+    <div id="hover-preview" class="hover-preview hidden">
+        <video id="hover-video" width="320" height="180" muted playsinline></video>
+        <div class="preview-meta">
+            <div id="preview-title">Camera</div>
+            <div id="preview-stats">Vectors: 0 • Avg speed: 0.0</div>
+            <div class="preview-actions">
+                <button id="pin-btn">Pin</button>
+                <button id="assign-btn">Assign Footage</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file input for assigning footage -->
+    <input id="file-input" type="file" accept="video/*" style="display:none" />
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Custom JS -->
