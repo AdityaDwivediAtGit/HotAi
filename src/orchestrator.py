@@ -1,8 +1,17 @@
 import cv2
 import json
 import os
+import sys
 import urllib.request
 import math
+from pathlib import Path
+
+# Ensure the repository root is on sys.path so fix_videos.py can be imported from src/orchestrator.py
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from fix_videos import convert
 from optical_flow import MotionExtractor
 
 def generate():
@@ -93,6 +102,9 @@ def generate():
     with open(os.path.join("ui", "camera_analytics.json"), 'w') as f:
         json.dump(analytics_db, f, indent=2)
     print("Orchestration complete. All videos and analytics saved.")
+
+    # Convert generated videos to browser-compatible H.264 after orchestration.
+    convert()
 
 if __name__ == "__main__":
     generate()
