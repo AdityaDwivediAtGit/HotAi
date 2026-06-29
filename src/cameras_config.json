@@ -1,0 +1,162 @@
+[
+  {
+    "id": "Cam_0",
+    "lat": 40.758,
+    "lng": -73.9805,
+    "heading": 180.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_1",
+    "lat": 40.759545084971876,
+    "lng": -73.98074471741853,
+    "heading": 198.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_2",
+    "lat": 40.76093892626147,
+    "lng": -73.98145491502812,
+    "heading": 216.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_3",
+    "lat": 40.76204508497188,
+    "lng": -73.98256107373854,
+    "heading": 234.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_4",
+    "lat": 40.76275528258148,
+    "lng": -73.98395491502812,
+    "heading": 252.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_5",
+    "lat": 40.763000000000005,
+    "lng": -73.9855,
+    "heading": 270.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_6",
+    "lat": 40.76275528258148,
+    "lng": -73.98704508497188,
+    "heading": 288.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_7",
+    "lat": 40.76204508497188,
+    "lng": -73.98843892626147,
+    "heading": 306.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_8",
+    "lat": 40.76093892626147,
+    "lng": -73.98954508497188,
+    "heading": 324.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_9",
+    "lat": 40.759545084971876,
+    "lng": -73.99025528258147,
+    "heading": 342.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_10",
+    "lat": 40.758,
+    "lng": -73.9905,
+    "heading": 360.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_11",
+    "lat": 40.75645491502813,
+    "lng": -73.99025528258147,
+    "heading": 378.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_12",
+    "lat": 40.75506107373854,
+    "lng": -73.98954508497188,
+    "heading": 396.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_13",
+    "lat": 40.753954915028125,
+    "lng": -73.98843892626147,
+    "heading": 414.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_14",
+    "lat": 40.753244717418525,
+    "lng": -73.98704508497188,
+    "heading": 432.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_15",
+    "lat": 40.753,
+    "lng": -73.9855,
+    "heading": 450.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_16",
+    "lat": 40.753244717418525,
+    "lng": -73.98395491502812,
+    "heading": 468.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_17",
+    "lat": 40.753954915028125,
+    "lng": -73.98256107373854,
+    "heading": 486.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_18",
+    "lat": 40.75506107373854,
+    "lng": -73.98145491502812,
+    "heading": 504.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  },
+  {
+    "id": "Cam_19",
+    "lat": 40.75645491502813,
+    "lng": -73.98074471741853,
+    "heading": 522.0,
+    "fov": 90,
+    "scale_pixels_to_meters": 0.05
+  }
+]

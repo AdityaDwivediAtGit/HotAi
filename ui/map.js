@@ -3,9 +3,9 @@ let cameras = [];
 let hotspotsLayer;
 let trajectoriesLayer;
 let analyticsDB = [];
+let activeCameraIndex = -1;
 
-const MAP_CENTER = [40.7580, -73.9855];
-const BASE_ASSET_URL = new URL('.', window.location.href).href;
+const MAP_CENTER = [40.7580, -73.9855]; 
 
 function initMap() {
     map = L.map('map', { zoomControl: false }).setView(MAP_CENTER, 15);
@@ -17,30 +17,23 @@ function initMap() {
     trajectoriesLayer = L.layerGroup().addTo(map);
 
     fetchData();
+    setupVideoSync();
 }
 
 async function fetchData() {
-    const analyticsUrl = new URL('camera_analytics.json', BASE_ASSET_URL).href;
     try {
-        console.log('Fetching analytics from', analyticsUrl);
-        const response = await fetch(analyticsUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        const response = await fetch('camera_analytics.json');
         analyticsDB = await response.json();
         setupCameras();
     } catch (e) {
-        console.warn('Unable to load camera_analytics.json:', e);
-        alert('Unable to load camera analytics. Please ensure camera_analytics.json is available in the UI folder and that the page is served from a web server.');
+        console.warn("Could not load camera_analytics.json", e);
     }
 }
 
 function setupCameras() {
     analyticsDB.forEach((camData, i) => {
-        // Use coordinates from JSON initially, but allow dragging
-        const marker = L.marker([camData.lat, camData.lng], { draggable: true }).addTo(map);
-        
-        marker.on('dragend', calculateConvergence);
+        // Fixed cameras, dragging disabled as they are real existing coordinates
+        const marker = L.marker([camData.lat, camData.lng], { draggable: false }).addTo(map);
         marker.on('click', () => openPanel(i));
         
         cameras.push({
@@ -52,50 +45,69 @@ function setupCameras() {
     calculateConvergence();
 }
 
-function openPanel(index) {
-    const cam = cameras[index].data;
-    document.getElementById('cam-title').innerText = cam.id + " Analytics";
-    
-    // Resolve video URL from the same asset folder as the script
+function setupVideoSync() {
     const videoElem = document.getElementById('cam-video');
-    const sourceElem = videoElem.querySelector('source');
-    const videoUrl = new URL(cam.video_path, BASE_ASSET_URL).href;
-    console.log('Loading camera video:', videoUrl);
-
-    videoElem.onerror = (ev) => {
-        console.error('Video element error for', videoUrl, ev);
-    };
-    sourceElem.onerror = () => {
-        console.error('Video source failed to load:', videoUrl);
-    };
-
-    sourceElem.src = videoUrl;
-    videoElem.src = videoUrl;
-    videoElem.load();
-    videoElem.play().catch(err => {
-        console.error('Video play failed:', err, videoUrl);
+    videoElem.addEventListener('timeupdate', () => {
+        if (activeCameraIndex === -1) return;
+        const camData = cameras[activeCameraIndex].data;
+        if (!camData.time_series || camData.time_series.length === 0) return;
+        
+        const currTime = videoElem.currentTime;
+        let closestFrame = camData.time_series[0];
+        let minDiff = Infinity;
+        
+        for (let i=0; i<camData.time_series.length; i++) {
+            const diff = Math.abs(camData.time_series[i].time - currTime);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestFrame = camData.time_series[i];
+            }
+        }
+        
+        updateSidebarStats(closestFrame);
     });
+}
+
+function updateSidebarStats(frameData) {
+    document.getElementById('cam-count').innerText = frameData.total;
     
-    // Load metrics
-    document.getElementById('cam-direction').innerText = cam.metrics.dominant_direction;
-    document.getElementById('cam-confidence').innerText = cam.metrics.confidence_score + "%";
-    document.getElementById('cam-count').innerText = cam.metrics.total_movement_vectors;
-    
-    // Load distribution bars
-    const dist = cam.metrics.directional_distribution;
-    const total = Math.max(1, Object.values(dist).reduce((a,b)=>a+b, 0));
+    let dominantDir = "N/A";
+    let maxVal = -1;
+    let totalVals = 0;
     
     ['North', 'South', 'East', 'West'].forEach(dir => {
-        const val = dist[dir] || 0;
-        const pct = (val / total) * 100;
+        const val = frameData.counts[dir] || 0;
+        totalVals += val;
+        if (val > maxVal) {
+            maxVal = val;
+            dominantDir = dir;
+        }
+        
+        const pct = frameData.total > 0 ? (val / frameData.total) * 100 : 0;
         document.getElementById(`bar-${dir}`).style.width = pct + "%";
         document.getElementById(`val-${dir}`).innerText = val;
     });
+    
+    document.getElementById('cam-direction').innerText = dominantDir;
+    const confidence = totalVals > 0 ? (maxVal / totalVals) * 100 : 0;
+    document.getElementById('cam-confidence').innerText = confidence.toFixed(1) + "%";
+}
+
+function openPanel(index) {
+    activeCameraIndex = index;
+    const cam = cameras[index].data;
+    document.getElementById('cam-title').innerText = cam.id + " Analytics";
+    
+    const videoElem = document.getElementById('cam-video');
+    videoElem.src = cam.video_path;
+    videoElem.load();
+    videoElem.play();
     
     document.getElementById('video-panel').classList.remove('hidden');
 }
 
 function closePanel() {
+    activeCameraIndex = -1;
     document.getElementById('video-panel').classList.add('hidden');
     document.getElementById('cam-video').pause();
 }
@@ -158,29 +170,46 @@ function calculateConvergence() {
     trajectoriesLayer.clearLayers();
     
     let projectedPoints = [];
-    const scaleFactor = 0.0005; // Simulation multiplier 
     
-    cameras.forEach(cam => {
-        const latLng = cam.marker.getLatLng();
-        const angleToCenter = Math.atan2(MAP_CENTER[0] - latLng.lat, MAP_CENTER[1] - latLng.lng);
+    cameras.forEach(camWrap => {
+        const cam = camWrap.data;
+        const latLng = camWrap.marker.getLatLng();
         
-        // We use the single mock dominant vector to generate 20 simulated trajectory points per camera
-        for(let i=0; i<20; i++) {
-            const noiseAngle = (Math.random() - 0.5) * 0.4;
-            const finalAngle = angleToCenter + noiseAngle;
+        // Rigid calibration mapping based on real-world camera geometry
+        const headingRad = (cam.heading * Math.PI) / 180;
+        const scaleFactor = cam.scale_pixels_to_meters * 0.00005;
+        
+        if (cam.time_series && cam.time_series.length > 0) {
+            let sumDx = 0; let sumDy = 0;
+            let count = 0;
+            for(let j=0; j<Math.min(50, cam.time_series.length); j++) {
+                sumDx += cam.time_series[j].dominant_vector_dx;
+                sumDy += cam.time_series[j].dominant_vector_dy;
+                count++;
+            }
+            if(count > 0) {
+                sumDx /= count; sumDy /= count;
+            }
             
-            // Speed noise
-            const speed = 5.0 * (0.5 + Math.random());
-            
-            const projLat = latLng.lat + (Math.sin(finalAngle) * speed * scaleFactor);
-            const projLng = latLng.lng + (Math.cos(finalAngle) * speed * scaleFactor);
-            
-            projectedPoints.push({ lat: projLat, lng: projLng, source: cam.id });
-            
-            if(Math.random() > 0.95) {
-                L.polyline([[latLng.lat, latLng.lng], [projLat, projLng]], {
-                    color: 'rgba(56, 189, 248, 0.2)', weight: 1
-                }).addTo(trajectoriesLayer);
+            // Map (dx,dy) to Geographic (Lat/Lng) based on fixed real-world heading
+            for(let i=0; i<15; i++) {
+                const noise = (Math.random() - 0.5) * 5;
+                const vx = sumDx + noise;
+                const vy = sumDy + noise;
+                
+                const geoLatOffset = (vy * Math.cos(headingRad) - vx * Math.sin(headingRad)) * scaleFactor;
+                const geoLngOffset = (vx * Math.cos(headingRad) + vy * Math.sin(headingRad)) * scaleFactor;
+                
+                const projLat = latLng.lat + geoLatOffset * 50; 
+                const projLng = latLng.lng + geoLngOffset * 50;
+                
+                projectedPoints.push({ lat: projLat, lng: projLng, source: cam.id });
+                
+                if(Math.random() > 0.8) {
+                    L.polyline([[latLng.lat, latLng.lng], [projLat, projLng]], {
+                        color: 'rgba(56, 189, 248, 0.2)', weight: 1
+                    }).addTo(trajectoriesLayer);
+                }
             }
         }
     });
@@ -189,7 +218,7 @@ function calculateConvergence() {
     let hotspotCount = 0;
     
     clusters.forEach(cluster => {
-        if (cluster.length < 25) return; 
+        if (cluster.length < 15) return; 
         hotspotCount++;
         
         let sumLat = 0; let sumLng = 0;
@@ -197,7 +226,7 @@ function calculateConvergence() {
         const centerLat = sumLat / cluster.length;
         const centerLng = sumLng / cluster.length;
         
-        const prob = Math.min(1.0, cluster.length / 150.0);
+        const prob = Math.min(1.0, cluster.length / 100.0);
         const r = 255;
         const g = Math.floor(255 * (1 - prob));
         const color = `rgb(${r}, ${g}, 0)`;
